@@ -6,6 +6,7 @@ library(modeest)
 library(fastDummies)
 
 fifa_data <- read_csv("/Users/yashpatel/Documents/dev/R_projects/ica/players_19.csv")
+fifa_data <- read_csv("C:/Users/Yash/Desktop/Development/fifa AML/dataset/players_20.csv")
 
 # View the first few rows
 head(fifa_data)
