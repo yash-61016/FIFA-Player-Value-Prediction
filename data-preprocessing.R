@@ -1,10 +1,11 @@
-install.packages(c("tidyverse", "lubridate", "modeest"))
+# install.packages(c("tidyverse", "lubridate", "modeest","fastDummies"))
 
 library(tidyverse)
 library(lubridate)
 library(modeest)
+library(fastDummies)
 
-fifa_data <- read_csv("/Users/yashpatel/Documents/dev/R_projects/ica/players_20.csv")
+fifa_data <- read_csv("/Users/yashpatel/Documents/dev/R_projects/ica/players_19.csv")
 
 # View the first few rows
 head(fifa_data)
@@ -218,3 +219,60 @@ fifa_data <- fifa_data %>%
 remaining_missing <- colSums(is.na(fifa_data))
 print(remaining_missing[remaining_missing > 0])
 
+# List of columns to remove
+columns_to_remove <- c(
+  "sofifa_id", "player_url", "short_name", "long_name", "dob",
+  "real_face", "joined", "player_positions"  # Include if redundant
+)
+
+# Remove the columns
+fifa_data <- fifa_data %>%
+  select(-all_of(columns_to_remove))
+
+# Calculate club frequencies
+club_frequency <- fifa_data %>%
+  group_by(club) %>%
+  summarise(freq = n()) %>%
+  ungroup()
+
+# Merge frequencies back into the dataset
+fifa_data <- fifa_data %>%
+  left_join(club_frequency, by = "club") %>%
+  rename(club_frequency = freq)
+
+# Remove the 'club' column
+fifa_data <- fifa_data %>%
+  select(-club)
+
+# Calculate nationality frequencies
+nationality_frequency <- fifa_data %>%
+  group_by(nationality) %>%
+  summarise(freq = n()) %>%
+  ungroup()
+
+# Merge frequencies back into the dataset
+fifa_data <- fifa_data %>%
+  left_join(nationality_frequency, by = "nationality") %>%
+  rename(nationality_frequency = freq)
+
+# Remove the 'nationality' column
+fifa_data <- fifa_data %>%
+  select(-nationality)
+
+# Define the reference year
+current_year <- 2024
+
+# Create 'contract_remaining_years'
+fifa_data <- fifa_data %>%
+  mutate(
+    contract_remaining_years = contract_valid_until - current_year
+  )
+
+# Remove 'contract_valid_until'
+fifa_data <- fifa_data %>%
+  select(-contract_valid_until)
+
+# One-hot encode categorical variables
+fifa_data <- fifa_data %>%
+  dummy_cols(select_columns = c("preferred_foot", "work_rate", "body_type", "team_position"),
+             remove_first_dummy = TRUE)
