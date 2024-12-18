@@ -225,7 +225,7 @@ print(remaining_missing[remaining_missing > 0])
 # List of columns to remove
 columns_to_remove <- c(
   "sofifa_id", "player_url", "short_name", "long_name", "dob",
-  "real_face", "joined", "player_positions"  # Include if redundant
+  "real_face", "joined", "player_positions"
 )
 
 # Remove the columns
@@ -406,6 +406,18 @@ fifa_data <- fifa_data %>%
 
 
 str(fifa_data[, sort(names(fifa_data))], list.len = ncol(fifa_data))
+
+##TODO
+#1. delete gk goalkeeper values
+#2. clean body types
+#3. add future eur values 2020
+#4. remove nationality
+#5. replace pace with gk speed where pace is 0/where is_gk is true
+#6. fix type for years_at_club
+#7. use mean values for position columns and also round them up
+#8. check club frequency
+
+
 
 # Set a seed for reproducibility
 set.seed(123)
