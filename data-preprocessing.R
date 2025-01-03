@@ -111,12 +111,12 @@ fifa_data <- fifa_data %>%
     )
   )
 
-# Create 'years_at_club' by subtracting 'joined' from the reference date
+# Create 'days_at_club' by subtracting 'joined' from the reference date
 reference_date <- ymd("2024-12-31")
 
 fifa_data <- fifa_data %>%
   mutate(
-    years_at_club = as.numeric(difftime(reference_date, joined, units="days"))
+    days_at_club = as.numeric(difftime(reference_date, joined, units="days"))
   )
 
 # Create 'is_goalkeeper' as a binary variable
@@ -138,14 +138,10 @@ fifa_data <- fifa_data %>%
     across(all_of(outfield_attributes), ~ if_else(is_goalkeeper == 1, 0, .))
   )
 
-# List of goalkeeping attributes
-goalkeeping_attributes <- c("gk_diving", "gk_handling", "gk_kicking", "gk_reflexes", "gk_speed", "gk_positioning")
-
-# Assign zero to goalkeeping attributes for outfield players
+# Removing gk_* fields because of redundancy
 fifa_data <- fifa_data %>%
-  mutate(
-    across(all_of(goalkeeping_attributes), ~ if_else(is_goalkeeper == 0,0,.))
-  )
+  select(-c(gk_diving, gk_handling, gk_kicking, gk_reflexes, gk_speed, gk_positioning))
+
 
 # List of position ratings
 position_ratings <- c(
@@ -207,6 +203,24 @@ fifa_data <- fifa_data %>%
     midfielder_positions = rowSums(select(., all_of(midfielder_positions)), na.rm = TRUE),
     defender_positions = rowSums(select(., all_of(defender_positions)), na.rm = TRUE),
   )
+
+# Cleaning body type
+unique(fifa_data$body_type)
+
+fifa_data <- fifa_data %>%
+  mutate(
+    body_type = case_when(
+      body_type == "Akinfenwa" ~ "Stocky",
+      body_type == "C. Ronaldo" ~ "Lean",
+      body_type == "Courtois" ~ "Normal",
+      body_type == "Messi" ~ "Lean",
+      body_type == "Neymar" ~ "Lean",
+      body_type == "Shaqiri" ~ "Stocky",
+      body_type == "PLAYER_BODY_TYPE_25" ~ "Normal",
+      TRUE ~ body_type
+    )
+  )
+
 
 # List of categorical columns to convert
 categorical_columns <- c("preferred_foot", "team_position", "work_rate", "body_type", 
@@ -279,10 +293,11 @@ fifa_data <- fifa_data %>%
 fifa_data <- fifa_data %>%
   select(-contract_valid_until)
 
+
 # One-hot encode categorical variables
 fifa_data <- fifa_data %>%
   dummy_cols(select_columns = c("preferred_foot", "work_rate", "body_type", "team_position"),
-             remove_first_dummy = TRUE)
+             remove_first_dummy = FALSE)
 
 # Ensure binary variables are numeric
 fifa_data <- fifa_data %>%
@@ -406,18 +421,6 @@ fifa_data <- fifa_data %>%
 
 
 str(fifa_data[, sort(names(fifa_data))], list.len = ncol(fifa_data))
-
-##TODO
-#1. delete gk goalkeeper values
-#2. clean body types
-#3. add future eur values 2020
-#4. remove nationality
-#5. replace pace with gk speed where pace is 0/where is_gk is true
-#6. fix type for years_at_club
-#7. use mean values for position columns and also round them up
-#8. check club frequency
-
-
 
 # Set a seed for reproducibility
 set.seed(123)
