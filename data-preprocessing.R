@@ -296,8 +296,8 @@ fifa_data <- fifa_data %>%
 
 # One-hot encode categorical variables
 fifa_data <- fifa_data %>%
-  dummy_cols(select_columns = c("preferred_foot", "work_rate", "body_type", "team_position"),
-             remove_first_dummy = FALSE)
+ dummy_cols(select_columns = c("preferred_foot", "work_rate", "body_type", "team_position"),
+            remove_first_dummy = FALSE)
 
 # Ensure binary variables are numeric
 fifa_data <- fifa_data %>%
